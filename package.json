@@ -1,5 +1,5 @@
 {
-   "name": "eslint-config-envoria",
+   "name": "eslint-config-envoria-frontend",
    "private": true,
    "version": "1.0.3",
    "packageManager": "yarn@4.7.0",
