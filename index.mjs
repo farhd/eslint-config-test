@@ -25,18 +25,40 @@ import ts from 'typescript-eslint';
 
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import fs from 'node:fs';
 
-const tsConfigPath = pathToFileURL(path.resolve(process.cwd(), 'tsconfig.json'));
+// Get the directory of the current file
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
+const tsConfigFile = 'tsconfig.json';
+// Define possible tsconfig.json locations (root + nested workspaces)
+const possibleTsConfigPaths = [
+   path.resolve(currentDir, `../../${tsConfigFile}`), // Nested workspace
+   path.resolve(currentDir, `../${tsConfigFile}`),   // Direct workspace
+   path.resolve(currentDir, `${tsConfigFile}`)       // Root workspace
+];
+
+// Find the first existing tsconfig.json
+const foundTsConfigPath = possibleTsConfigPaths.find(fs.existsSync);
+
+if (!foundTsConfigPath) {
+   console.warn('⚠️  Warning: No tsconfig.json found. Some ESLint rules may not work correctly.');
+}
+
+// Convert path to file URL for dynamic import
+const tsConfigPath = foundTsConfigPath ? pathToFileURL(foundTsConfigPath) : null;
 
 let tsConfig = {};
 try {
-   const { default: _tsConfig } = await import(tsConfigPath, { with: { type: 'json' } });
-   tsConfig = _tsConfig;
+   if (tsConfigPath) {
+      const { default: _tsConfig } = await import(tsConfigPath, { with: { type: 'json' } });
+      tsConfig = _tsConfig;
+   }
 } catch (error) {
-   console.warn(`⚠️  Warning: Could not load tsconfig.json at ${tsConfigPath.href}. Some ESLint rules may not work correctly.`);
+   console.warn(`⚠️  Warning: Could not load tsconfig.json from ${tsConfigPath?.href}. Some ESLint rules may not work correctly.`);
 }
 
-const ignores = tsConfig.exclude;
+const ignores = tsConfig.exclude || [];
 
 const jsConfigs = [
    eslintPluginPromise.configs['flat/recommended'], // OK
