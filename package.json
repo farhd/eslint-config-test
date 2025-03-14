@@ -1,7 +1,7 @@
 {
    "name": "eslint-config-envoria",
    "private": true,
-   "version": "1.32.8",
+   "version": "1.0.2",
    "packageManager": "yarn@4.7.0",
    "engines": {
       "node": "^22.14.0"

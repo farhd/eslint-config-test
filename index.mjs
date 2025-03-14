@@ -22,7 +22,6 @@ import eslintPluginYml from 'eslint-plugin-yml';
 import globals from 'globals';
 import { merge, omit } from 'lodash-es';
 import ts from 'typescript-eslint';
-import tsConfig from '../../tsconfig.json' with { type: 'json' };
 
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -31,11 +30,11 @@ const tsConfigPath = pathToFileURL(path.resolve(process.cwd(), 'tsconfig.json'))
 
 let tsConfig = {};
 try {
-   tsConfig = await import(tsConfigPath, { with: { type: 'json' } });
+   const { default: _tsConfig } = await import(tsConfigPath, { with: { type: 'json' } });
+   tsConfig = _tsConfig;
 } catch (error) {
    console.warn(`⚠️  Warning: Could not load tsconfig.json at ${tsConfigPath.href}. Some ESLint rules may not work correctly.`);
 }
-
 
 const ignores = tsConfig.exclude;
 
@@ -147,7 +146,7 @@ const languageOptions = {
    parserOptions: {
       ...react.configs.recommended.parserOptions,
       ecmaVersion: 'latest',
-      project: path.fileURLToPath(tsConfigPath),
+      project: fileURLToPath(tsConfigPath),
    },
    globals: {
       ...globals.serviceworker,
